@@ -20,14 +20,4 @@ namespace KinectAnalytics
         }
     }
 
-    
-
-    public class TrackedPerson 
-    {
-        public ulong TrackingId;
-        public DateTime TimeEnteredScene;
-        public bool RightHandRaised;
-        public bool LeftHandRaised;
-    }
-
 }

@@ -8,7 +8,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive;
 using Kinect.ReactiveV2;
+using Newtonsoft.Json;
 using log4net;
+using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace KinectAnalytics
 {
@@ -17,29 +20,40 @@ namespace KinectAnalytics
         static private ILog log = LogManager.GetLogger(typeof(PeopleTracker));
 
         KinectSensor sensor;
-        private Dictionary<ulong, TrackedPerson> personSubscriptions;
+        private Dictionary<ulong, TrackedPerson> trackedPeople;
         private Dictionary<ulong, IDisposable> rightHandSubscriptions;
 
         public PeopleTracker()
         {
-            log.Info("Starting");
-
-            sensor = KinectSensor.GetDefault();
-            sensor.Open();
-
-            if (sensor.IsOpen)
+            log.Info("People Tracker Started");
+            try
             {
-                Console.WriteLine("Sensor opened");
-                this.Start();
-                rightHandSubscriptions = new Dictionary<ulong, IDisposable>();
-                personSubscriptions = new Dictionary<ulong, TrackedPerson>();
+                sensor = KinectSensor.GetDefault();
+                sensor.Open();
+                sensor.IsAvailableChanged += sensor_IsAvailableChanged;
             }
-            else
+            catch(Exception e)
             {
-                Console.WriteLine("Failed to open sensor");
+                log.Info(e.Message);
             }
         }
 
+        void sensor_IsAvailableChanged(object sender, IsAvailableChangedEventArgs e)
+        {
+           if(e.IsAvailable)
+           {               
+               log.Info(string.Format("Sensor available {0}", DateTime.UtcNow));
+               Console.WriteLine("Sensor available");
+               this.Start();
+               rightHandSubscriptions = new Dictionary<ulong, IDisposable>();
+               trackedPeople = new Dictionary<ulong, TrackedPerson>();
+           }
+           else
+           {
+               log.Info(string.Format("Sensor unavailable {0}", DateTime.UtcNow));
+               Console.WriteLine("Sensor unavailable");
+           }
+        }
 
         public void Start()
         {
@@ -59,22 +73,32 @@ namespace KinectAnalytics
                       if (_.SceneChangedType is PersonEnteredScene)
                       {
                           Console.WriteLine("Person {0} entered scene", trackingId);
-                          TrackedPerson person = new TrackedPerson() { TrackingId = trackingId, TimeEnteredScene = DateTime.UtcNow };
-                          personSubscriptions.Add(trackingId, person);
+                          TrackedPerson person = new TrackedPerson() { TrackingId = trackingId, EnteredScene = DateTime.UtcNow };
+                          trackedPeople.Add(trackingId, person);
                           rightHandSubscriptions.Add(trackingId, SubscribeToHandsRaised(person, bodyFrameObservable));
+
+                          
                       }
                       else if (_.SceneChangedType is PersonLeftScene)
                       {
-                          var person = personSubscriptions[trackingId];
+                          var person = trackedPeople[trackingId];
+                          person.LeftScene = DateTime.UtcNow;
+                          person.TotalInScene = person.LeftScene - person.EnteredScene;
+                          person.Engaged = person.RightHandRaised && person.LeftHandRaised;
+
                           Console.WriteLine("Person {0} left the scene {1} hands raised:{2}",
                                             trackingId,
-                                            DateTime.UtcNow - person.TimeEnteredScene,
-                                            (person.RightHandRaised && person.LeftHandRaised));
-                          personSubscriptions.Remove(trackingId);
+                                            person.TotalInScene,
+                                            person.Engaged);
+
+                          trackedPeople.Remove(trackingId);
 
                           var subscription = rightHandSubscriptions[trackingId];
                           rightHandSubscriptions.Remove(trackingId);
+
                           subscription.Dispose();
+
+                          LogTrackedPerson(person);
                       }
                   });
         }
@@ -99,16 +123,45 @@ namespace KinectAnalytics
                                                             {
                                                                 person.LeftHandRaised = true;
                                                             }
-
-                                                            // TODO: Are hands above waist?
-                                                            // TODO: Stuff like that
-
                                                         });
 
             return new CompositeDisposable
             {
                 handsSubscription
             };
+        }
+
+        private void LogTrackedPerson(TrackedPerson trackedPerson)
+        {
+            // Get file name
+            var analyticsFilePath = GetFileNameFromDateTime();
+
+            List<TrackedPerson> persons;
+
+            if (File.Exists(analyticsFilePath))
+            {
+                var jsonString = File.ReadAllText(analyticsFilePath, Encoding.UTF8);
+                persons = JsonConvert.DeserializeObject<List<TrackedPerson>>(jsonString);
+            }
+            else
+            {
+                persons = new List<TrackedPerson>();
+            }
+
+            // Add our new person
+            persons.Add(trackedPerson);
+
+            string newJson = JsonConvert.SerializeObject(persons.ToArray());
+
+            // Make sure that our directory exisits
+            Directory.CreateDirectory("log/Analytics");
+
+            File.WriteAllText(analyticsFilePath, newJson);
+        }
+
+        private string GetFileNameFromDateTime()
+        {
+            return "log//Analytics//Analytics_" + DateTime.UtcNow.ToString("yyyyMMddHH") + ".json";
         }
     }
 }
