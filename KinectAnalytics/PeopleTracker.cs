@@ -15,7 +15,7 @@ using System.IO;
 
 namespace KinectAnalytics
 {
-    public class PeopleTracker : IDisposable
+    public class PeopleTracker
     {
         static private ILog log = LogManager.GetLogger(typeof(PeopleTracker));
 
@@ -44,18 +44,16 @@ namespace KinectAnalytics
            if(e.IsAvailable)
            {
                log.Info(string.Format("Sensor available {0}", DateTime.UtcNow));
-               Console.WriteLine("Sensor available");
            }
            else
            {
                log.Info(string.Format("Sensor unavailable {0}", DateTime.UtcNow));
-               Console.WriteLine("Sensor unavailable");
            }
         }
 
         public void Start()
         {
-            Console.WriteLine("People Tracker Started");
+            log.Info("People Tracker Started");
 
             this.rightHandSubscriptions = new Dictionary<ulong, IDisposable>();
             this.trackedPeople = new Dictionary<ulong, TrackedPerson>();
@@ -73,7 +71,7 @@ namespace KinectAnalytics
 
                       if (_.SceneChangedType is PersonEnteredScene)
                       {
-                          Console.WriteLine("Person {0} entered scene", trackingId);
+                          log.Info(string.Format("Person {0} entered scene", trackingId));
                           TrackedPerson person = new TrackedPerson() { TrackingId = trackingId, EnteredScene = DateTime.UtcNow };
                           trackedPeople.Add(trackingId, person);
                           rightHandSubscriptions.Add(trackingId, SubscribeToHandsRaised(person, bodyFrameObservable));
@@ -87,10 +85,10 @@ namespace KinectAnalytics
                           person.TotalInScene = person.LeftScene - person.EnteredScene;
                           person.Engaged = person.RightHandRaised && person.LeftHandRaised;
 
-                          Console.WriteLine("Person {0} left the scene {1} hands raised:{2}",
-                                            trackingId,
-                                            person.TotalInScene,
-                                            person.Engaged);
+                          log.Info(string.Format("Person {0} left the scene {1} hands raised:{2}", 
+                                                 trackingId,
+                                                 person.TotalInScene,
+                                                 person.Engaged));
 
                           trackedPeople.Remove(trackingId);
 
@@ -141,11 +139,13 @@ namespace KinectAnalytics
 
             if (File.Exists(analyticsFilePath))
             {
+                // Deserialize our saved analytics
                 var jsonString = File.ReadAllText(analyticsFilePath, Encoding.UTF8);
                 persons = JsonConvert.DeserializeObject<List<TrackedPerson>>(jsonString);
             }
             else
             {
+                // Create new analytics file
                 persons = new List<TrackedPerson>();
             }
 
@@ -160,18 +160,13 @@ namespace KinectAnalytics
             File.WriteAllText(analyticsFilePath, newJson);
 
             log.Info(string.Format("Person Logged {0}", DateTime.UtcNow));
-            Console.WriteLine("Person Logged");
         }
 
         private string GetFileNameFromDateTime()
         {
+            // Get a different file name for every hour
             return "log//Analytics//Analytics_" + DateTime.UtcNow.ToString("yyyyMMddHH") + ".json";
         }
 
-        public void Dispose()
-        {
-            this.sensor.Close();
-            this.sensor = null;
-        }
     }
 }
