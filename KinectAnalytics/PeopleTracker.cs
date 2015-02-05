@@ -15,7 +15,7 @@ using System.IO;
 
 namespace KinectAnalytics
 {
-    public class PeopleTracker
+    public class PeopleTracker : IDisposable
     {
         static private ILog log = LogManager.GetLogger(typeof(PeopleTracker));
 
@@ -28,9 +28,10 @@ namespace KinectAnalytics
             log.Info("People Tracker Started");
             try
             {
-                sensor = KinectSensor.GetDefault();
-                sensor.Open();
-                sensor.IsAvailableChanged += sensor_IsAvailableChanged;
+                this.sensor = KinectSensor.GetDefault();
+                this.sensor.IsAvailableChanged += sensor_IsAvailableChanged;
+                this.sensor.Open();
+                this.Start();
             }
             catch(Exception e)
             {
@@ -41,12 +42,9 @@ namespace KinectAnalytics
         void sensor_IsAvailableChanged(object sender, IsAvailableChangedEventArgs e)
         {
            if(e.IsAvailable)
-           {               
+           {
                log.Info(string.Format("Sensor available {0}", DateTime.UtcNow));
                Console.WriteLine("Sensor available");
-               this.Start();
-               rightHandSubscriptions = new Dictionary<ulong, IDisposable>();
-               trackedPeople = new Dictionary<ulong, TrackedPerson>();
            }
            else
            {
@@ -58,6 +56,9 @@ namespace KinectAnalytics
         public void Start()
         {
             Console.WriteLine("People Tracker Started");
+
+            this.rightHandSubscriptions = new Dictionary<ulong, IDisposable>();
+            this.trackedPeople = new Dictionary<ulong, TrackedPerson>();
 
             Body[] bodies = null;
             var reader = this.sensor.BodyFrameSource.OpenReader();
@@ -157,11 +158,20 @@ namespace KinectAnalytics
             Directory.CreateDirectory("log/Analytics");
 
             File.WriteAllText(analyticsFilePath, newJson);
+
+            log.Info(string.Format("Person Logged {0}", DateTime.UtcNow));
+            Console.WriteLine("Person Logged");
         }
 
         private string GetFileNameFromDateTime()
         {
             return "log//Analytics//Analytics_" + DateTime.UtcNow.ToString("yyyyMMddHH") + ".json";
+        }
+
+        public void Dispose()
+        {
+            this.sensor.Close();
+            this.sensor = null;
         }
     }
 }

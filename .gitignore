@@ -14,6 +14,12 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
+# =========================
+# Any Log Files
+# =========================
+**/bin
+**/obj
+
 # Windows shortcuts
 *.lnk
 
