@@ -1,4 +1,5 @@
 ﻿using Microsoft.Kinect;
+using Microsoft.Kinect.Face;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ using log4net;
 using Newtonsoft.Json.Linq;
 using System.IO;
 
+
 namespace KinectAnalytics
 {
     public class PeopleTracker
@@ -20,8 +22,17 @@ namespace KinectAnalytics
         static private ILog log = LogManager.GetLogger(typeof(PeopleTracker));
 
         KinectSensor sensor;
+        // The face frame source
+        FaceFrameSource faceFrameSource = null;
+
+        //// The face frame reader
+        MultiSourceFrameReader multiReader = null;
+        
         private Dictionary<ulong, TrackedPerson> trackedPeople;
         private Dictionary<ulong, IDisposable> rightHandSubscriptions;
+        private Dictionary<ulong, IDisposable> faceSubscriptions;
+
+        IDisposable bodyFrameForFaceSubscription;
 
         public PeopleTracker()
         {
@@ -35,7 +46,7 @@ namespace KinectAnalytics
             }
             catch(Exception e)
             {
-                log.Info(e.Message);
+                log.Error(e.Message);
             }
         }
 
@@ -56,13 +67,28 @@ namespace KinectAnalytics
             log.Info("People Tracker Started");
 
             this.rightHandSubscriptions = new Dictionary<ulong, IDisposable>();
+            this.faceSubscriptions = new Dictionary<ulong, IDisposable>();
             this.trackedPeople = new Dictionary<ulong, TrackedPerson>();
 
             Body[] bodies = null;
-            var reader = this.sensor.BodyFrameSource.OpenReader();
+            var bodyReader = this.sensor.BodyFrameSource.OpenReader();
             var bodyFrameObservable = this.sensor
-                                          .BodyFrameArrivedObservable(reader)
+                                          .BodyFrameArrivedObservable(bodyReader)
                                           .SelectBodies(bodies);
+
+            bodyFrameForFaceSubscription = bodyFrameObservable.Subscribe(OnBodyFrameForFace);
+
+            faceFrameSource = new FaceFrameSource(sensor,
+                       0,
+                       FaceFrameFeatures.FaceEngagement |
+                       FaceFrameFeatures.Happy |
+                       FaceFrameFeatures.Glasses);
+
+            var faceReader = faceFrameSource.OpenReader();
+
+            var faceFramesObservable = Observable.FromEvent<FaceFrameArrivedEventArgs>(
+                  ev => { faceReader.FrameArrived += (s, ei) => ev(ei); },
+                  ev => { faceReader.FrameArrived -= (s, ei) => ev(ei); }).SelectFaceFrame();
 
             sensor.SceneChanges()
                   .Subscribe(_ =>
@@ -75,8 +101,7 @@ namespace KinectAnalytics
                           TrackedPerson person = new TrackedPerson() { TrackingId = trackingId, EnteredScene = DateTime.UtcNow };
                           trackedPeople.Add(trackingId, person);
                           rightHandSubscriptions.Add(trackingId, SubscribeToHandsRaised(person, bodyFrameObservable));
-
-                          
+                          faceSubscriptions.Add(trackingId, SubscribeToFace(person, faceFramesObservable));
                       }
                       else if (_.SceneChangedType is PersonLeftScene)
                       {
@@ -92,41 +117,106 @@ namespace KinectAnalytics
 
                           trackedPeople.Remove(trackingId);
 
-                          var subscription = rightHandSubscriptions[trackingId];
+                          var handSubscription = rightHandSubscriptions[trackingId];
                           rightHandSubscriptions.Remove(trackingId);
+                          handSubscription.Dispose();
 
-                          subscription.Dispose();
+                          var faceSubscription = faceSubscriptions[trackingId];
+                          faceSubscriptions.Remove(trackingId);
+                          faceSubscription.Dispose();
 
                           LogTrackedPerson(person);
                       }
                   });
         }
 
+        private void OnBodyFrameForFace(Body[] bodies)
+        {
+            // Set the neast body to be reporting face ananlaytics
+
+            var body = bodies
+                       .Where(b => b.IsTracked)
+                       .OrderBy(b => b.Joints[JointType.Head]
+                       .Position.Z)
+                       .FirstOrDefault();
+
+            if (body != null)
+            {
+                faceFrameSource.TrackingId = body.TrackingId;
+            }
+
+
+            // Cycle through bodies
+
+            //if (trackedPeople != null)
+            //{
+            //    var tackedCount = trackedPeople.Count;
+            //    var orderTrackedPeople = trackedPeople.OrderBy(p => p.Value.EnteredScene).Select(e => e.Value.TrackingId);
+            //    if (tackedCount > 0)
+            //    {
+            //        var enumerator = orderTrackedPeople.SkipWhile(k => k != faceFrameSource.TrackingId).Skip(1).FirstOrDefault();
+
+            //        if (enumerator > 0)
+            //        {
+            //            faceFrameSource.TrackingId = enumerator;
+            //        }
+            //        else
+            //        {
+            //            faceFrameSource.TrackingId = orderTrackedPeople.First();
+            //        }
+                    
+            //    }
+            //}
+
+        }
+
         private IDisposable SubscribeToHandsRaised(TrackedPerson person, IObservable<Body[]> bodyFrameObservable)
         {
             var handsSubscription = bodyFrameObservable.SelectTracked(person.TrackingId)
-                                                       .Subscribe(pos =>
+                                                       .Subscribe(body =>
                                                        {
-                                                            var WristRight = pos.Joints[JointType.WristRight];
-                                                            var ElbowRight = pos.Joints[JointType.ElbowRight];
+                                                           var WristRight = body.Joints[JointType.WristRight];
+                                                           var ElbowRight = body.Joints[JointType.ElbowRight];
 
-                                                            if (WristRight.Position.Y > ElbowRight.Position.Y)
-                                                            {
-                                                                person.RightHandRaised = true;
-                                                            }
+                                                           if (WristRight.Position.Y > ElbowRight.Position.Y)
+                                                           {
+                                                               
+                                                               person.RightHandRaised = true;
+                                                           }
 
-                                                            var WristLeft = pos.Joints[JointType.WristLeft];
-                                                            var ElbowLeft = pos.Joints[JointType.ElbowLeft];
+                                                           var WristLeft = body.Joints[JointType.WristLeft];
+                                                           var ElbowLeft = body.Joints[JointType.ElbowLeft];
 
-                                                            if (WristLeft.Position.Y > ElbowLeft.Position.Y)
-                                                            {
-                                                                person.LeftHandRaised = true;
-                                                            }
-                                                        });
+                                                           if (WristLeft.Position.Y > ElbowLeft.Position.Y)
+                                                           {
+                                                               person.LeftHandRaised = true;
+                                                           }
+                                                       });
 
             return new CompositeDisposable
             {
                 handsSubscription
+            };
+        }
+
+        private IDisposable SubscribeToFace(TrackedPerson person, IObservable<FaceFrameResult> faceFrameObservable)
+        {
+            var faceSubscription = faceFrameObservable
+                                   .Where(t => t.TrackingId == person.TrackingId)
+                                   .Subscribe(faceFrameResult =>
+                                    {
+                                            var eyeLeftClosed = faceFrameResult.FaceProperties[FaceProperty.LeftEyeClosed];
+                                            var eyeRightClosed = faceFrameResult.FaceProperties[FaceProperty.RightEyeClosed];
+                                            var mouthOpen = faceFrameResult.FaceProperties[FaceProperty.MouthOpen];
+                                            if (mouthOpen == DetectionResult.Yes)
+                                            {
+                                                Console.WriteLine("Mouth Open {0}", faceFrameSource.TrackingId);
+                                            }
+                                    });
+
+            return new CompositeDisposable
+            {
+                faceSubscription
             };
         }
 

@@ -34,6 +34,7 @@ C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Ki
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\log4net.dll
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Microsoft.CSharp.dll
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Microsoft.Kinect.dll
+C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Microsoft.Kinect.Face.dll
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Newtonsoft.Json.dll
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\System.Interactive.dll
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\System.Reactive.Core.dll
@@ -45,6 +46,7 @@ C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Sy
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Microsoft.Kinect.Wpf.Controls.dll
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\log4net.xml
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Microsoft.Kinect.xml
+C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Microsoft.Kinect.Face.xml
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Newtonsoft.Json.xml
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\System.Interactive.xml
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\System.Reactive.Core.xml
