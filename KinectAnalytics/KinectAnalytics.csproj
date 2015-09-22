@@ -81,10 +81,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FaceFrameObservableExtensions.cs" />
+    <Compile Include="Models\Config.cs" />
     <Compile Include="PeopleTracker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TrackedPerson.cs" />
+    <Compile Include="Models\TrackedPerson.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

@@ -1,0 +1,8 @@
+{
+	"Name": "Kinect Analytics Test",
+	"Track": {
+		"Height": true,
+		"Engadged": true,
+		"Smiled": true
+	}
+}

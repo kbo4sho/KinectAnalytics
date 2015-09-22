@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using log4net;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using KinectAnalytics.Models;
 
 
 namespace KinectAnalytics
