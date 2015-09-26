@@ -15,5 +15,12 @@ namespace KinectAnalytics.Models
         public bool RightHandRaised;
         public bool LeftHandRaised;
         public bool Engaged;
+        public bool Happy;
+        public double Height;
+        public double MaxHeight;
+        public double MinHeight;
+        public string FirstLocation;
+        public string LastLocation;
+
     }
 }

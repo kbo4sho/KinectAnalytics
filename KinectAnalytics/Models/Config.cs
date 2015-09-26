@@ -16,6 +16,9 @@ namespace KinectAnalytics.Models
     {
         public bool Height { get; set; }
         public bool Engadged { get; set; }
-        public bool Smiled { get; set; }
+        public bool Happy { get; set; }
+        public bool Position { get; set; }
+        public bool LeftHandRasied { get; set; }
+        public bool RightHandRasied { get; set; }
     }
 }

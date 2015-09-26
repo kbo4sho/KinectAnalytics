@@ -1,1 +1,0 @@
-﻿config.json should be in the deployment directory of the running application and is stored here just for convience

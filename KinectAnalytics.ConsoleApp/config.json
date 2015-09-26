@@ -1,0 +1,11 @@
+{
+	"Name": "Kinect Analytics Test",
+	"Track": {
+		"Height": true,
+		"Engadged": true,
+        "Happy": true,
+        "Position": true,
+        "LeftHandRaised": true,
+        "RightHandRaised": true
+	}
+}

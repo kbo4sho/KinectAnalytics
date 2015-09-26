@@ -57,10 +57,6 @@ C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Mi
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.exe
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.pdb
 C:\Users\kbolander\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.csprojResolveAssemblyReference.cache
-C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\KinectAnalytics.exe.config
-C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.exe
-C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.pdb
-C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\KinectAnalytics.exe
 C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\KinectAnalytics.pdb
 C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Kinect.ReactiveV2.dll
 C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Kinect.ReactiveV2.Input.dll
@@ -87,4 +83,7 @@ C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\System
 C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\System.Reactive.Linq.xml
 C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\System.Reactive.PlatformServices.xml
 C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\Microsoft.Kinect.Wpf.Controls.xml
-C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.csprojResolveAssemblyReference.cache
+C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.pdb
+C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\KinectAnalytics.dll.config
+C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\bin\Debug\KinectAnalytics.dll
+C:\Users\Kevin\Documents\GitHub\KinectAnalytics\KinectAnalytics\obj\Debug\KinectAnalytics.dll
