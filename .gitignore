@@ -20,6 +20,8 @@ $RECYCLE.BIN/
 **/bin
 **/obj
 
+**/packages
+
 # Windows shortcuts
 *.lnk
 
