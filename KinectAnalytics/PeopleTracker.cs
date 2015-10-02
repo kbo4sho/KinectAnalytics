@@ -21,8 +21,6 @@ namespace KinectAnalytics
 {
     public class PeopleTracker
     {
-        static private ILog log = LogManager.GetLogger(typeof(PeopleTracker));
-
         KinectSensor kinect;
         FaceFrameSource faceFrameSource = null;
 
@@ -36,7 +34,6 @@ namespace KinectAnalytics
 
         public PeopleTracker(Config config)
         {
-            log.Info("People Tracker Started");
             this.config = config;
             try
             {
@@ -47,7 +44,7 @@ namespace KinectAnalytics
             }
             catch (Exception e)
             {
-                log.Error(e.Message);
+                SendError(e.Message);
             }
         }
 
@@ -55,17 +52,17 @@ namespace KinectAnalytics
         {
             if (e.IsAvailable)
             {
-                log.Info(string.Format("Sensor available {0}", DateTime.UtcNow));
+                SendInfo(string.Format("Sensor available {0}", DateTime.Now));
             }
             else
             {
-                log.Info(string.Format("Sensor unavailable {0}", DateTime.UtcNow));
+                SendInfo(string.Format("Sensor unavailable {0}", DateTime.Now));
             }
         }
 
         public void Start()
         {
-            log.Info("People Tracker Started");
+            SendInfo("People Tracker Started");
 
             this.bodySubscriptions = new Dictionary<ulong, IDisposable>();
             this.faceSubscriptions = new Dictionary<ulong, IDisposable>();
@@ -97,7 +94,7 @@ namespace KinectAnalytics
 
                       if (_.SceneChangedType is PersonEnteredScene)
                       {
-                          log.Info(string.Format("Person {0} entered scene", trackingId));
+                          SendInfo(string.Format("Person {0} entered scene", trackingId));
                           TrackedPerson person = new TrackedPerson() { TrackingId = trackingId, EnteredScene = DateTime.UtcNow };
                           trackedPeople.Add(trackingId, person);
                           bodySubscriptions.Add(trackingId, SubscribeToBody(person, bodyFrameObservable, faceFramesObservable));
@@ -109,7 +106,7 @@ namespace KinectAnalytics
                           person.LeftScene = DateTime.UtcNow;
                           person.TotalInScene = person.LeftScene - person.EnteredScene;
 
-                          log.Info(string.Format("Person {0} left the scene {1} Engaged:{2} Happy:{3} Height:{4} FirstLocation:{5} LastLocation:{6}",
+                          SendInfo(string.Format("Person {0} left the scene {1} Engaged:{2} Happy:{3} Height:{4} FirstLocation:{5} LastLocation:{6}",
                                                  trackingId,
                                                  person.TotalInScene,
                                                  person.Engaged,
@@ -124,7 +121,7 @@ namespace KinectAnalytics
                           bodySubscriptions.Remove(trackingId);
                           subscription.Dispose();
 
-                          LogTrackedPerson(person);
+                          SendPerson(person);
                       }
                   });
         }
@@ -258,43 +255,69 @@ namespace KinectAnalytics
             };
         }
 
-        private void LogTrackedPerson(TrackedPerson trackedPerson)
+
+        private void SendPerson(TrackedPerson trackedPerson)
         {
-            // Get file name
-            var analyticsFilePath = GetFileNameFromDateTime();
-
-            List<TrackedPerson> persons;
-
-            if (File.Exists(analyticsFilePath))
-            {
-                // Deserialize our saved analytics
-                var jsonString = File.ReadAllText(analyticsFilePath, Encoding.UTF8);
-                persons = JsonConvert.DeserializeObject<List<TrackedPerson>>(jsonString);
-            }
-            else
-            {
-                // Create new analytics file
-                persons = new List<TrackedPerson>();
-            }
-
-            // Add our new person
-            persons.Add(trackedPerson);
-
-            string newJson = JsonConvert.SerializeObject(persons.ToArray());
-
-            // Make sure that our directory exisits
-            Directory.CreateDirectory("log/Analytics");
-
-            File.WriteAllText(analyticsFilePath, newJson);
-
-            log.Info(string.Format("Person Logged {0}", DateTime.UtcNow));
+            OnPersonJustLeft(new TrackedPersonEventArgs(trackedPerson));
         }
 
-        private string GetFileNameFromDateTime()
+        public event EventHandler PersonJustLeft;
+        private void OnPersonJustLeft(TrackedPersonEventArgs trackedPerson)
         {
-            // Get a different file name for every hour
-            return "log//Analytics//Analytics_" + DateTime.UtcNow.ToString("yyyyMMddHH") + ".json";
+            var handler = this.PersonJustLeft;
+            if (handler != null)
+            {
+                handler(this, trackedPerson);
+            }
         }
 
+        private void SendError(string error)
+        {
+            OnError(new StringEventArgs(error));
+        }
+
+        public event EventHandler Error;
+        private void OnError(StringEventArgs error)
+        {
+            var handler = this.Error;
+            if (handler != null)
+            {
+                handler(this, error);
+            }
+        }
+
+        private void SendInfo(string message)
+        {
+            OnInfo(new StringEventArgs(message));
+        }
+
+        public event EventHandler Info;
+        private void OnInfo(StringEventArgs info)
+        {
+            var handler = this.Info;
+            if (handler != null)
+            {
+                handler(this, info);
+            }
+        }
+
+    }
+
+    public class StringEventArgs : EventArgs
+    {
+        public string Message { get; internal set; }
+        public StringEventArgs(string message)
+        {
+            this.Message = message;
+        }
+    }
+
+    public class TrackedPersonEventArgs : EventArgs
+    {
+        public TrackedPerson TrackedPerson { get; internal set; }
+        public TrackedPersonEventArgs(TrackedPerson trackedPerson)
+        {
+            this.TrackedPerson = trackedPerson;
+        }
     }
 }

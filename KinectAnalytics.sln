@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinectAnalytics", "KinectAn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinectAnalytics.ConsoleApp", "KinectAnalytics.ConsoleApp\KinectAnalytics.ConsoleApp.csproj", "{53599451-B334-4960-9D24-F736C8828685}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinectAnalytics.Reporting", "KinectAnalytics.Reporting\KinectAnalytics.Reporting.csproj", "{246E5041-3E9A-4B4D-A652-B33C2FA30316}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{53599451-B334-4960-9D24-F736C8828685}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53599451-B334-4960-9D24-F736C8828685}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53599451-B334-4960-9D24-F736C8828685}.Release|Any CPU.Build.0 = Release|Any CPU
-		{246E5041-3E9A-4B4D-A652-B33C2FA30316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{246E5041-3E9A-4B4D-A652-B33C2FA30316}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{246E5041-3E9A-4B4D-A652-B33C2FA30316}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{246E5041-3E9A-4B4D-A652-B33C2FA30316}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
